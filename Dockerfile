@@ -1,5 +1,5 @@
 # Build stage: Node + Rust/wasm-pack for the static site
-FROM node:22-bookworm AS build
+FROM node:24-bookworm AS build
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends curl ca-certificates build-essential \
@@ -12,7 +12,7 @@ ENV RUSTUP_HOME=/usr/local/rustup \
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
     | sh -s -- -y --default-toolchain stable \
   && rustup target add wasm32-unknown-unknown \
-  && cargo install wasm-pack --locked
+  && cargo install wasm-pack --version 0.15.0 --locked
 
 WORKDIR /app
 
@@ -23,7 +23,7 @@ COPY . .
 RUN npm run build
 
 # Production stage: serve static assets with nginx
-FROM nginx:1.27-alpine AS production
+FROM nginx:1.28-alpine AS production
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
