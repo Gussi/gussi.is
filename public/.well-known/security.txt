@@ -1,0 +1,4 @@
+Contact: mailto:gussi@gussi.is
+Expires: 2027-06-17T23:59:59.000Z
+Preferred-Languages: en, is
+Canonical: https://gussi.is/.well-known/security.txt
