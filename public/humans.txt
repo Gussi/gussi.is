@@ -1,0 +1,16 @@
+/* TEAM */
+
+    Developer: Gunnsteinn Þórisson
+    Contact: gussi@gussi.is
+    Location: Iceland
+
+/* THANKS */
+
+    Science Gothic — The Science Gothic Project Authors (OFL)
+    Aurora shaders — simplex noise, Ashima Arts / Ian McEwan
+
+/* SITE */
+
+    Standards: HTML5, CSS3, WebGL2, Rust/WASM
+    Components: Vite, TypeScript
+    Software: Cursor, rustc, wasm-pack
