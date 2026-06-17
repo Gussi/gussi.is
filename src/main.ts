@@ -50,6 +50,7 @@ async function main(): Promise<void> {
     lastTime = now;
     elapsed += dt;
 
+    const clock = new Date();
     const uniforms = tick(
       dt,
       input.cursorX,
@@ -57,6 +58,8 @@ async function main(): Promise<void> {
       input.scrollY,
       elapsed,
       isMobile(),
+      clock.getHours(),
+      clock.getMinutes(),
     );
 
     renderer.draw({
@@ -68,6 +71,7 @@ async function main(): Promise<void> {
       flowX: uniforms[5],
       flowY: uniforms[6],
       layerCount: uniforms[7],
+      leetIntensity: uniforms[8],
       resolutionX: 0,
       resolutionY: 0,
       phaseX: visual.phaseX,

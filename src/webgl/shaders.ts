@@ -32,6 +32,7 @@ uniform float u_layer_count;
 uniform vec2 u_phase;
 uniform float u_hue_shift;
 uniform vec4 u_layer_y;
+uniform float u_leet_intensity;
 
 // Simplex 2D noise (Ashima Arts / Ian McEwan)
 vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -95,7 +96,13 @@ vec3 auroraLayer(vec2 uv, float timeScale, float yOffset, float depth) {
   vec3 baseColor = mix(coolColor, edgeColor, n2 * 0.5 + 0.5);
   baseColor = mix(baseColor, warmColor, u_color_temp * ribbon);
 
-  return baseColor * ribbon * 0.35;
+  vec3 leetGreen = vec3(0.08, 0.92, 0.22);
+  vec3 leetRed = vec3(0.92, 0.12, 0.18);
+  float leetStripe = sin(p.x * 14.0 + t * 1.5) * 0.5 + 0.5;
+  vec3 leetColor = mix(leetRed, leetGreen, leetStripe);
+  baseColor = mix(baseColor, leetColor, u_leet_intensity);
+
+  return baseColor * ribbon * mix(0.35, 0.55, u_leet_intensity);
 }
 
 void main() {
@@ -103,6 +110,8 @@ void main() {
   uv.y = 1.0 - uv.y;
 
   vec3 sky = mix(vec3(0.04, 0.055, 0.08), vec3(0.05, 0.08, 0.12), uv.y);
+  vec3 leetSky = mix(vec3(0.06, 0.02, 0.03), vec3(0.02, 0.05, 0.03), uv.y);
+  sky = mix(sky, leetSky, u_leet_intensity);
 
   vec3 color = sky;
 

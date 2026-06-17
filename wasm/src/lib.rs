@@ -33,6 +33,7 @@ struct State {
     flow_bias_x: f32,
     flow_bias_y: f32,
     time_offset: f32,
+    smooth_leet_intensity: f32,
 }
 
 thread_local! {
@@ -42,6 +43,7 @@ thread_local! {
 const CURSOR_SMOOTH: f32 = 3.0;
 const SCROLL_SMOOTH: f32 = 2.0;
 const COLOR_SMOOTH: f32 = 2.5;
+const LEET_SMOOTH: f32 = 1.2;
 const INFLUENCE_RADIUS: f32 = 0.25;
 const BASE_LAYER_Y: [f32; 4] = [0.0, 0.1, -0.05, 0.15];
 
@@ -71,6 +73,7 @@ pub fn init(seed: f32) -> Vec<f32> {
             flow_bias_x: 0.0,
             flow_bias_y: 0.0,
             time_offset,
+            smooth_leet_intensity: 0.0,
         });
     });
 
@@ -90,7 +93,15 @@ fn lerp_exp(current: f32, target: f32, rate: f32, dt: f32) -> f32 {
     current + (target - current) * t
 }
 
-/// Returns 8 floats: time, cursor_x, cursor_y, scroll, color_temp, flow_x, flow_y, layer_count
+fn leet_target(hour: i32, minute: i32) -> f32 {
+    if hour == 13 && minute == 37 {
+        1.0
+    } else {
+        0.0
+    }
+}
+
+/// Returns 9 floats: time, cursor_x, cursor_y, scroll, color_temp, flow_x, flow_y, layer_count, leet_intensity
 #[wasm_bindgen]
 pub fn tick(
     dt: f32,
@@ -99,6 +110,8 @@ pub fn tick(
     scroll_y: f32,
     time: f32,
     is_mobile: bool,
+    hour: i32,
+    minute: i32,
 ) -> Vec<f32> {
     STATE.with(|s| {
         let mut state = s.borrow_mut();
@@ -121,6 +134,10 @@ pub fn tick(
         state.flow_bias_x = lerp_exp(state.flow_bias_x, target_flow_x, CURSOR_SMOOTH, dt);
         state.flow_bias_y = lerp_exp(state.flow_bias_y, target_flow_y, CURSOR_SMOOTH, dt);
 
+        let target_leet = leet_target(hour, minute);
+        state.smooth_leet_intensity =
+            lerp_exp(state.smooth_leet_intensity, target_leet, LEET_SMOOTH, dt);
+
         let layer_count = if is_mobile { 2.0 } else { 4.0 };
 
         vec![
@@ -132,6 +149,7 @@ pub fn tick(
             state.flow_bias_x,
             state.flow_bias_y,
             layer_count,
+            state.smooth_leet_intensity,
         ]
     })
 }
@@ -152,5 +170,13 @@ mod tests {
         let a = init(1.0);
         let b = init(2.0);
         assert_ne!(a, b);
+    }
+
+    #[test]
+    fn leet_target_only_at_1337() {
+        assert_eq!(leet_target(13, 37), 1.0);
+        assert_eq!(leet_target(13, 36), 0.0);
+        assert_eq!(leet_target(13, 38), 0.0);
+        assert_eq!(leet_target(12, 37), 0.0);
     }
 }

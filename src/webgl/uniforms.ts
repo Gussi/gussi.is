@@ -14,6 +14,7 @@ export interface AuroraUniforms {
   flowX: number;
   flowY: number;
   layerCount: number;
+  leetIntensity: number;
   resolutionX: number;
   resolutionY: number;
   phaseX: number;
@@ -40,6 +41,7 @@ export class UniformUploader {
       u_phase: gl.getUniformLocation(program, "u_phase"),
       u_hue_shift: gl.getUniformLocation(program, "u_hue_shift"),
       u_layer_y: gl.getUniformLocation(program, "u_layer_y"),
+      u_leet_intensity: gl.getUniformLocation(program, "u_leet_intensity"),
     };
   }
 
@@ -61,5 +63,6 @@ export class UniformUploader {
       u.layerY[2],
       u.layerY[3],
     );
+    gl.uniform1f(this.locations.u_leet_intensity, u.leetIntensity);
   }
 }
