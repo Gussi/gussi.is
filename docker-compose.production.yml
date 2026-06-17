@@ -1,15 +1,24 @@
 services:
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: gussi-is:latest
-    ports:
-      - "${HTTP_PORT:-8080}:80"
+    image: ghcr.io/gussi/gussi.is:${IMAGE_TAG:-latest}
+    pull_policy: always
     restart: unless-stopped
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gussi-is.rule=${HOST_RULE:-Host(`gussi.is`) || Host(`www.gussi.is`) || Host(`gussi.dev`) || Host(`www.gussi.dev`)}"
+      - "traefik.http.routers.gussi-is.entrypoints=websecure"
+      - "traefik.http.routers.gussi-is.tls.certresolver=letsencrypt"
+      - "traefik.http.services.gussi-is.loadbalancer.server.port=80"
+      - "traefik.docker.network=traefik"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 10s
+
+networks:
+  traefik:
+    external: true

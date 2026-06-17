@@ -40,11 +40,33 @@ Deploy by uploading `dist/` to any static host.
 
 ## Docker
 
+### Local
+
+Build and run on [http://localhost:8080](http://localhost:8080):
+
 ```bash
-docker compose -f docker-compose.production.yml up -d --build
+docker compose up -d --build
 ```
 
-Serves the site on [http://localhost:8080](http://localhost:8080) by default.
+Override the port with `HTTP_PORT=3000 docker compose up -d --build`.
+
+### Production (Portainer / Traefik)
+
+Pulls the pre-built image from GHCR. Requires an external Traefik network (`docker network create traefik` if needed).
+
+If the GHCR package is private, add `ghcr.io` as a registry in Portainer with a GitHub PAT (`read:packages` scope).
+
+```bash
+docker compose -f docker-compose.production.yml up -d
+```
+
+Traefik routes these hosts over HTTPS: `gussi.is`, `www.gussi.is`, `gussi.dev`, `www.gussi.dev`.
+
+Override via `.env` (see `.env.example`):
+- `IMAGE_TAG` — image tag to deploy (default `latest`)
+- `HOST_RULE` — Traefik host matcher rule
+
+Ensure Traefik uses `websecure` and a `letsencrypt` cert resolver matching the labels.
 
 ## Container registry
 
