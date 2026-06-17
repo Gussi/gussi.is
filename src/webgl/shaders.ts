@@ -29,6 +29,9 @@ uniform float u_color_temp;
 uniform vec2 u_flow_bias;
 uniform vec2 u_resolution;
 uniform float u_layer_count;
+uniform vec2 u_phase;
+uniform float u_hue_shift;
+uniform vec4 u_layer_y;
 
 // Simplex 2D noise (Ashima Arts / Ian McEwan)
 vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -72,7 +75,7 @@ float fbm(vec2 p) {
 
 vec3 auroraLayer(vec2 uv, float timeScale, float yOffset, float depth) {
   float t = u_time * timeScale;
-  vec2 p = uv;
+  vec2 p = uv + u_phase;
   p.x += u_flow_bias.x;
   p.y += u_flow_bias.y + u_scroll * depth * 0.3;
 
@@ -85,9 +88,9 @@ vec3 auroraLayer(vec2 uv, float timeScale, float yOffset, float depth) {
   float ribbon = smoothstep(0.2, 0.8, n * 0.5 + 0.5 + n2 * 0.3);
   ribbon *= curtain;
 
-  vec3 coolColor = vec3(0.18, 0.83, 0.66);
+  vec3 coolColor = mix(vec3(0.12, 0.75, 0.58), vec3(0.18, 0.83, 0.66), u_hue_shift);
   vec3 warmColor = vec3(0.96, 0.45, 0.71);
-  vec3 edgeColor = vec3(0.49, 0.23, 0.93);
+  vec3 edgeColor = mix(vec3(0.35, 0.15, 0.75), vec3(0.49, 0.23, 0.93), u_hue_shift);
 
   vec3 baseColor = mix(coolColor, edgeColor, n2 * 0.5 + 0.5);
   baseColor = mix(baseColor, warmColor, u_color_temp * ribbon);
@@ -103,10 +106,10 @@ void main() {
 
   vec3 color = sky;
 
-  if (u_layer_count >= 1.0) color += auroraLayer(uv, 0.3, 0.0, 0.2);
-  if (u_layer_count >= 2.0) color += auroraLayer(uv, 0.5, 0.1, 0.4);
-  if (u_layer_count >= 3.0) color += auroraLayer(uv, 0.7, -0.05, 0.6);
-  if (u_layer_count >= 4.0) color += auroraLayer(uv, 1.0, 0.15, 0.8);
+  if (u_layer_count >= 1.0) color += auroraLayer(uv, 0.3, u_layer_y.x, 0.2);
+  if (u_layer_count >= 2.0) color += auroraLayer(uv, 0.5, u_layer_y.y, 0.4);
+  if (u_layer_count >= 3.0) color += auroraLayer(uv, 0.7, u_layer_y.z, 0.6);
+  if (u_layer_count >= 4.0) color += auroraLayer(uv, 1.0, u_layer_y.w, 0.8);
 
   color = color / (color + vec3(1.0));
 

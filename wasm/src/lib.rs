@@ -1,6 +1,30 @@
 use std::cell::RefCell;
 use wasm_bindgen::prelude::*;
 
+struct Rng {
+    state: u32,
+}
+
+impl Rng {
+    fn from_seed(seed: f32) -> Self {
+        let bits = seed.to_bits();
+        Self {
+            state: bits ^ (bits >> 16) ^ 0x9E37_79B9 | 1,
+        }
+    }
+
+    fn next_f32(&mut self) -> f32 {
+        self.state ^= self.state << 13;
+        self.state ^= self.state >> 17;
+        self.state ^= self.state << 5;
+        self.state as f32 / u32::MAX as f32
+    }
+
+    fn range(&mut self, min: f32, max: f32) -> f32 {
+        min + self.next_f32() * (max - min)
+    }
+}
+
 struct State {
     smooth_cursor_x: f32,
     smooth_cursor_y: f32,
@@ -8,6 +32,7 @@ struct State {
     smooth_color_temp: f32,
     flow_bias_x: f32,
     flow_bias_y: f32,
+    time_offset: f32,
 }
 
 thread_local! {
@@ -18,9 +43,25 @@ const CURSOR_SMOOTH: f32 = 3.0;
 const SCROLL_SMOOTH: f32 = 2.0;
 const COLOR_SMOOTH: f32 = 2.5;
 const INFLUENCE_RADIUS: f32 = 0.25;
+const BASE_LAYER_Y: [f32; 4] = [0.0, 0.1, -0.05, 0.15];
 
+/// Initialize state from seed. Returns visual params for shaders:
+/// [phase_x, phase_y, hue_shift, layer_y0..3]
 #[wasm_bindgen]
-pub fn init(_seed: f32) {
+pub fn init(seed: f32) -> Vec<f32> {
+    let mut rng = Rng::from_seed(seed);
+
+    let phase_x = rng.range(-2.5, 2.5);
+    let phase_y = rng.range(-1.5, 1.5);
+    let hue_shift = rng.range(0.0, 1.0);
+    let layer_y: [f32; 4] = [
+        BASE_LAYER_Y[0] + rng.range(-0.12, 0.12),
+        BASE_LAYER_Y[1] + rng.range(-0.12, 0.12),
+        BASE_LAYER_Y[2] + rng.range(-0.12, 0.12),
+        BASE_LAYER_Y[3] + rng.range(-0.12, 0.12),
+    ];
+    let time_offset = rng.range(0.0, 180.0);
+
     STATE.with(|s| {
         *s.borrow_mut() = Some(State {
             smooth_cursor_x: 0.5,
@@ -29,8 +70,19 @@ pub fn init(_seed: f32) {
             smooth_color_temp: 0.0,
             flow_bias_x: 0.0,
             flow_bias_y: 0.0,
+            time_offset,
         });
     });
+
+    vec![
+        phase_x,
+        phase_y,
+        hue_shift,
+        layer_y[0],
+        layer_y[1],
+        layer_y[2],
+        layer_y[3],
+    ]
 }
 
 fn lerp_exp(current: f32, target: f32, rate: f32, dt: f32) -> f32 {
@@ -72,7 +124,7 @@ pub fn tick(
         let layer_count = if is_mobile { 2.0 } else { 4.0 };
 
         vec![
-            time,
+            time + state.time_offset,
             state.smooth_cursor_x,
             state.smooth_cursor_y,
             state.smooth_scroll,
@@ -82,4 +134,23 @@ pub fn tick(
             layer_count,
         ]
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn init_is_deterministic_for_same_seed() {
+        let a = init(42.0);
+        let b = init(42.0);
+        assert_eq!(a, b);
+    }
+
+    #[test]
+    fn init_varies_across_seeds() {
+        let a = init(1.0);
+        let b = init(2.0);
+        assert_ne!(a, b);
+    }
 }

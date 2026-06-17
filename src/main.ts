@@ -1,6 +1,7 @@
 import "./styles/main.css";
 import initWasm, { init, tick } from "./wasm/pkg/gussi_aurora";
 import { AuroraRenderer } from "./webgl/renderer";
+import type { AuroraVisualSeed } from "./webgl/uniforms";
 import {
   attachInputListeners,
   createInputState,
@@ -24,7 +25,13 @@ async function main(): Promise<void> {
   }
 
   await initWasm();
-  init(Math.random());
+  const seed = init(Math.random());
+  const visual: AuroraVisualSeed = {
+    phaseX: seed[0],
+    phaseY: seed[1],
+    hueShift: seed[2],
+    layerY: [seed[3], seed[4], seed[5], seed[6]],
+  };
 
   const input = createInputState();
   let elapsed = 0;
@@ -63,6 +70,10 @@ async function main(): Promise<void> {
       layerCount: uniforms[7],
       resolutionX: 0,
       resolutionY: 0,
+      phaseX: visual.phaseX,
+      phaseY: visual.phaseY,
+      hueShift: visual.hueShift,
+      layerY: visual.layerY,
     });
 
     if (!prefersReducedMotion) {
