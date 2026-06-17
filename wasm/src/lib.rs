@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use wasm_bindgen::prelude::*;
 
 struct State {
@@ -9,7 +10,9 @@ struct State {
     flow_bias_y: f32,
 }
 
-static mut STATE: Option<State> = None;
+thread_local! {
+    static STATE: RefCell<Option<State>> = const { RefCell::new(None) };
+}
 
 const CURSOR_SMOOTH: f32 = 3.0;
 const SCROLL_SMOOTH: f32 = 2.0;
@@ -18,8 +21,8 @@ const INFLUENCE_RADIUS: f32 = 0.25;
 
 #[wasm_bindgen]
 pub fn init(_seed: f32) {
-    unsafe {
-        STATE = Some(State {
+    STATE.with(|s| {
+        *s.borrow_mut() = Some(State {
             smooth_cursor_x: 0.5,
             smooth_cursor_y: 0.5,
             smooth_scroll: 0.0,
@@ -27,7 +30,7 @@ pub fn init(_seed: f32) {
             flow_bias_x: 0.0,
             flow_bias_y: 0.0,
         });
-    }
+    });
 }
 
 fn lerp_exp(current: f32, target: f32, rate: f32, dt: f32) -> f32 {
@@ -45,8 +48,9 @@ pub fn tick(
     time: f32,
     is_mobile: bool,
 ) -> Vec<f32> {
-    unsafe {
-        let state = STATE.as_mut().expect("call init() first");
+    STATE.with(|s| {
+        let mut state = s.borrow_mut();
+        let state = state.as_mut().expect("call init() first");
 
         state.smooth_cursor_x = lerp_exp(state.smooth_cursor_x, cursor_x, CURSOR_SMOOTH, dt);
         state.smooth_cursor_y = lerp_exp(state.smooth_cursor_y, cursor_y, CURSOR_SMOOTH, dt);
@@ -77,5 +81,5 @@ pub fn tick(
             state.flow_bias_y,
             layer_count,
         ]
-    }
+    })
 }
