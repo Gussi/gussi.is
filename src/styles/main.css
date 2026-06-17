@@ -6,6 +6,22 @@
   padding: 0;
 }
 
+@font-face {
+  font-family: "Science Gothic";
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("/fonts/science-gothic-300.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Science Gothic";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/science-gothic-400.ttf") format("truetype");
+}
+
 html {
   height: 200vh; /* enables subtle scroll parallax */
 }
