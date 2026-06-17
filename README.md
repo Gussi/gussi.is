@@ -37,3 +37,26 @@ npm run preview
 ```
 
 Deploy by uploading `dist/` to any static host.
+
+## Docker
+
+```bash
+docker compose -f docker-compose.production.yml up -d --build
+```
+
+Serves the site on [http://localhost:8080](http://localhost:8080) by default.
+
+## Container registry
+
+Pushes to `main` build and publish an image to GitHub Container Registry:
+
+`ghcr.io/gussi/gussi.is:latest`
+
+Pull and run:
+
+```bash
+docker pull ghcr.io/gussi/gussi.is:latest
+docker run -p 8080:80 ghcr.io/gussi/gussi.is:latest
+```
+
+The package is private by default. To make it public: GitHub repo → Packages → Package settings → Change visibility.
