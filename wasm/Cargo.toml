@@ -2,6 +2,9 @@
 name = "gussi-aurora"
 version = "0.1.0"
 edition = "2021"
+description = "WASM input smoothing for the gussi.is aurora background"
+repository = "https://github.com/Gussi/gussi.is"
+license = "MIT"
 
 [lib]
 crate-type = ["cdylib"]
