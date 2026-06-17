@@ -95,7 +95,7 @@ body {
   }
 }
 
-.no-webgl body {
+body.no-webgl {
   background: linear-gradient(
     180deg,
     #0a0e14 0%,
