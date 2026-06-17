@@ -1,1 +1,1 @@
-console.log("gussi.is");
+import "./styles/main.css";
