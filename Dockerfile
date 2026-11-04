@@ -1,5 +1,8 @@
+# Base images are pinned by tag + digest so a rebuild is reproducible.
+# Dependabot bumps both (see .github/dependabot.yml).
+
 # Build stage: Node + Rust/wasm-pack for the static site
-FROM node:24-bookworm AS build
+FROM node:24.22.2-bookworm@sha256:e7add2a490bb17d97b485b8641bd88455fff7839ade0f5eba493c3508124d413 AS build
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends curl ca-certificates build-essential \
@@ -9,12 +12,16 @@ ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH
 
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
-    | sh -s -- -y --default-toolchain stable \
-  && rustup target add wasm32-unknown-unknown \
-  && cargo install wasm-pack --version 0.15.0 --locked
-
 WORKDIR /app
+
+# The Rust version and wasm target come from wasm/rust-toolchain.toml.
+COPY wasm/rust-toolchain.toml wasm/
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+    | sh -s -- -y --profile minimal --default-toolchain none \
+  && cd wasm \
+  && rustup toolchain install \
+  && rustup default "$(rustup show active-toolchain | cut -d' ' -f1)" \
+  && cargo install wasm-pack --version 0.15.0 --locked
 
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -22,8 +29,8 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Production stage: serve static assets with nginx
-FROM nginx:1.28-alpine AS production
+# Production stage: serve static assets with nginx (stable branch)
+FROM nginx:1.30.6-alpine@sha256:0e52bd054126cdc040b1276c0af347aeb02a41b9cfe305d6094767ac30e97949 AS production
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html

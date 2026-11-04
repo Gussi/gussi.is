@@ -1,0 +1,49 @@
+version: 2
+
+# Version updates for every build input. Security updates (npm, cargo) are
+# enabled separately in the repo settings and are not limited by this file.
+# Dependabot's default 3-day cooldown applies to version updates.
+updates:
+  # Base images in the Dockerfile, pinned by tag + digest. Digest bumps
+  # (same tag, rebuilt image) and patch bumps are auto-merged once the PR
+  # build passes; see .github/workflows/dependabot-auto-merge.yml.
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    ignore:
+      # Build stage only. Move to the next Node LTS by hand.
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
+      # Odd nginx minors are mainline releases; stay on stable branches
+      # (even minors). A new stable branch arrives as a minor PR to review.
+      - dependency-name: "nginx"
+        versions: ["1.31.x", "1.33.x", "1.35.x", "1.37.x"]
+
+  - package-ecosystem: "rust-toolchain"
+    directory: "/wasm"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "cargo"
+    directory: "/wasm"
+    schedule:
+      interval: "weekly"
+    groups:
+      cargo-patch:
+        patterns: ["*"]
+        update-types: ["patch"]
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      npm-patch:
+        patterns: ["*"]
+        update-types: ["patch"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

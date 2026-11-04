@@ -12,7 +12,7 @@ Personal site with a generative aurora background — calm, minimal, art-first.
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) (v18+)
-- [Rust](https://rustup.rs/)
+- [Rust](https://rustup.rs/) via rustup; the version is pinned in `wasm/rust-toolchain.toml` and installed automatically
 - [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/) — `cargo install wasm-pack`
 
 ## Run locally
@@ -82,3 +82,7 @@ docker run -p 8080:80 ghcr.io/gussi/gussi.is:latest
 ```
 
 The package is private by default. To make it public: GitHub repo → Packages → Package settings → Change visibility.
+
+## Dependency pinning
+
+Base images (`Dockerfile`, tag + digest), the Rust toolchain (`wasm/rust-toolchain.toml`), npm, Cargo and GitHub Actions are kept current by Dependabot (`.github/dependabot.yml`). Dependabot PRs that only change an image digest or a patch version are merged automatically once the PR build passes, which then publishes a new image; everything else needs a manual review.
