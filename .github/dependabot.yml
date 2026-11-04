@@ -17,8 +17,10 @@ updates:
         update-types: ["version-update:semver-major"]
       # Odd nginx minors are mainline releases; stay on stable branches
       # (even minors). A new stable branch arrives as a minor PR to review.
+      # Docker tags are matched as Ruby Gem requirements: "~> 1.31.0" means
+      # >= 1.31.0, < 1.32.0 ("1.31.x" did not match).
       - dependency-name: "nginx"
-        versions: ["1.31.x", "1.33.x", "1.35.x", "1.37.x"]
+        versions: ["~> 1.31.0", "~> 1.33.0", "~> 1.35.0", "~> 1.37.0"]
 
   - package-ecosystem: "rust-toolchain"
     directory: "/wasm"
