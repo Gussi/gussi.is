@@ -1,0 +1,6 @@
+# Pinned Rust toolchain for the wasm crate. Used by local builds and the
+# Dockerfile; Dependabot (rust-toolchain ecosystem) opens PRs to bump it.
+[toolchain]
+channel = "1.99.1"
+profile = "minimal"
+targets = ["wasm32-unknown-unknown"]
