@@ -9,6 +9,14 @@ on:
       - main
   workflow_dispatch:
 
+# One run at a time per branch, in order, so an older run can never finish
+# last and push an older image as :latest. On main a newer run waits for the
+# running one (GitHub keeps only the newest waiting run); on PRs a new push
+# cancels the stale build.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ghcr.io/gussi/gussi.is
