@@ -2,7 +2,7 @@
 # Dependabot bumps both (see .github/dependabot.yml).
 
 # Build stage: Node + Rust/wasm-pack for the static site
-FROM node:24.22.2-bookworm@sha256:8fa96264f302f58bbb13aa7339c541547b56975766ce956c875da149452a3e40 AS build
+FROM node:24.22.3-bookworm@sha256:9d266751ca3d7fdbe651c878ffd5ad0a42fed49a18c283509267c97f025b7496 AS build
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends curl ca-certificates build-essential \
